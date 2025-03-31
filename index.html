@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <h2 id="authTitle">Вход</h2>
+        
+        <form id="loginForm">
+            <div class="input-group">
+                <label for="loginEmail">E-mail</label>
+                <input type="email" id="loginEmail" required>
+            </div>
+            <div class="input-group">
+                <label for="loginPassword">Пароль</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            <button type="submit" class="auth-btn">Войти</button>
+            <p class="switch-form">Нет аккаунта? <a href="#" id="switchToRegister">Создать</a></p>
+        </form>
+
+        <form id="registerForm" class="hidden">
+            <div class="input-group">
+                <label for="username">Никнейм</label>
+                <input type="text" id="username" required>
+            </div>
+            <div class="input-group">
+                <label for="registerEmail">E-mail</label>
+                <input type="email" id="registerEmail" required>
+            </div>
+            <div class="input-group">
+                <label for="registerPassword">Пароль</label>
+                <input type="password" id="registerPassword" required>
+            </div>
+            <div class="input-group">
+                <label for="confirmPassword">Повторите пароль</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+            <button type="submit" class="auth-btn">Зарегистрироваться</button>
+            <p class="switch-form">Уже есть аккаунт? <a href="#" id="switchToLogin">Войти</a></p>
+        </form>
+    </div>
+    <script src="auth.js"></script>
+</body>
+</html>

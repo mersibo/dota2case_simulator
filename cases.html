@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dota 2 Case Simulator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
+    <link rel="stylesheet" href="cases.css">
+</head>
+<body>
+    <div class="menu">
+        <div class="profile">
+            <img src="assets/logo.png" alt="Avatar" id="avatarImage">
+            <p>Баланс: <span id="balanceAmount">3000</span> монет</p>
+        </div>
+        <button onclick="location.href='inventory.html'">Инвентарь</button>
+        <button onclick="logout()">Выход</button>
+    </div>
+
+    <div class="cases-container" id="casesContainer"></div> 
+
+    <div class="container" id="caseDetailsContainer" style="display: none;">
+        <div class="case-info">
+            <p id="casePrice">Стоимость открытия: <span id="priceAmount"></span> монет</p>
+            <button id="backToCasesBtn" class="back-btn">Назад к кейсам</button> 
+            <h2 id="selectedCaseName"></h2>
+            <button class="open-case-btn" id="openCaseBtn" onclick="startSpin()" disabled>Открыть кейс</button>
+        </div>
+        <div class="case-items" id="caseItems"></div> 
+
+        <div class="roulette-container">
+            <div class="roulette" id="roulette"></div>
+        </div>
+
+        <div class="item-result" id="itemResult" style="display: none;">
+            <img id="itemImage" src="" alt="Item">
+            <p id="itemName"></p>
+        </div>
+    </div>
+
+    <script src="cases.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        function logout() {
+            alert("Вы вышли из аккаунта");
+            location.href = "index.html"; 
+        }
+    </script>
+</body>
+</html>
