@@ -11,10 +11,13 @@ function updateBalance() {
 
 function updateInventory() {
     inventoryList.innerHTML = "";
-    
+
     if (inventory.length === 0) {
         inventoryList.innerHTML = "<p>Инвентарь пуст</p>";
+        document.getElementById("sell-all-btn").style.display = "none"; // Скрываем кнопку
         return;
+    } else {
+        document.getElementById("sell-all-btn").style.display = "block"; // Показываем кнопку
     }
 
     inventory.forEach((item, index) => {
@@ -34,6 +37,15 @@ function sellItem(index) {
     let item = inventory[index];
     balance += item.price;
     inventory.splice(index, 1);
+    updateBalance();
+    updateInventory();
+    localStorage.setItem("inventory", JSON.stringify(inventory));
+}
+
+function sellAll() {
+    let totalValue = inventory.reduce((sum, item) => sum + item.price, 0);
+    balance += totalValue;
+    inventory = [];
     updateBalance();
     updateInventory();
     localStorage.setItem("inventory", JSON.stringify(inventory));

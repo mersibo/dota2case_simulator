@@ -196,26 +196,42 @@ function startSpin() {
     balance -= selectedCase.price;
     updateBalance();
 
-    let items = selectedCase.items;
     let finalItem = getRandomItem(selectedCase.items);
-
     inventory.push(finalItem);
     updateInventory();
 
-    populateRoulette();
-
-    let itemWidth = 120;
-    let itemsOnScreen = 5;
-    let finalPosition = (document.getElementById("roulette").children.length - itemsOnScreen) * itemWidth;
-
     let roulette = document.getElementById("roulette");
-    roulette.style.transition = "left 18s cubic-bezier(0.05, 1, 0.2, 1)";
-    roulette.style.left = `-${finalPosition + 1500}px`;
+    roulette.innerHTML = ""; 
+
+    let itemsOnScreen = 7; 
+    let itemWidth = 120; 
+    let totalItems = 40; 
+
+    for (let i = 0; i < totalItems; i++) {
+        let item = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
+        let img = document.createElement("img");
+        img.src = item.image;
+        img.classList.add("roulette-item");
+        roulette.appendChild(img);
+    }
+
+    let finalIndex = Math.floor(totalItems / 2);
+    roulette.children[finalIndex].src = finalItem.image;
+
+    let finalPosition = finalIndex * itemWidth - (itemsOnScreen * itemWidth) / 2;
+
+    roulette.style.transition = "none";
+    roulette.style.left = "0px";
 
     setTimeout(() => {
-        roulette.style.transition = "left 5s cubic-bezier(0.2, 1, 0.3, 1)";
+        roulette.style.transition = "left 3s ease-out";
+        roulette.style.left = `-${finalPosition + 1800}px`;
+    }, 50);
+
+    setTimeout(() => {
+        roulette.style.transition = "left 3s cubic-bezier(0.2, 1, 0.3, 1)";
         roulette.style.left = `-${finalPosition}px`;
-    }, 18000);
+    }, 3000);
 
     setTimeout(() => {
         let resultBox = document.getElementById("itemResult");
@@ -226,21 +242,26 @@ function startSpin() {
         itemName.innerHTML = `Выпало: <b>${finalItem.name} (${finalItem.rarity})</b>`;
 
         resultBox.style.borderColor = finalItem.color;
+        resultBox.style.display = "block";
+        resultBox.style.opacity = "0";
+        resultBox.style.transform = "translate(-50%, -50%) scale(0.5)";
 
-        resultBox.style.display = "block"; 
         setTimeout(() => {
-            resultBox.style.transform = "translate(-50%, -50%) scale(1)";
             resultBox.style.opacity = "1";
+            resultBox.style.transform = "translate(-50%, -50%) scale(1)";
         }, 100);
 
         setTimeout(() => {
-            resultBox.style.transform = "translate(-50%, -50%) scale(0.5)"; 
+            resultBox.style.opacity = "0";
+            resultBox.style.transform = "translate(-50%, -50%) scale(0.5)";
             setTimeout(() => {
-                resultBox.style.display = "none"; 
-            }, 500);
-        }, 3000);
-    }, 23000);
+                resultBox.style.display = "none";
+            }, 800);
+        }, 3500);
+    }, 6200);
 }
+
+
 
 function updateBalance() {
     balanceElement.innerText = balance;
