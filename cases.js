@@ -1,13 +1,37 @@
 const cases = {
+    "Common Case": {
+        price: 100,
+        image: "assets/cases/bomj_case.webp",
+        items: [
+            { name: "Flared Wooden Crest", rarity: "Common", price: 10, image: "assets/items/flared_wooden_crest.png", color: "gray"},
+            { name: "Omnishred the Defiant", rarity: "Common", price: 15, image: "assets/items/omnishred_the_defiant.png", color: "gray"},
+            { name: "Feathered Naginata", rarity: "Common", price: 20, image: "assets/items/feathered_naginata.png", color: "gray"},
+            { name: "Necklace of Scarlet Raven", rarity: "Common", price: 12, image: "assets/items/necklace_of_scarlet_raven.png", color: "gray"},
+            { name: "Staff of the Fungal Lord", rarity: "Common", price: 8, image: "assets/items/staff_of_the_fungal_lord.png", color: "gray"},
+            { name: "Golden Moonfall", rarity: "Immortal", price: 1500, image: "assets/items/golden_moonfall.webp", color: "gold"}
+        ]
+    },
+    "Uncommon Case": {
+        price: 300,
+        image: "assets/cases/treasury.webp",
+        items: [
+            { name: "Inscribed Sylvan Guard's Cape", rarity: "Uncommon", price: 80, image: "assets/items/inscribed_cape.png", color: "lightblue"},
+            { name: "Obsidian Blade Dagger", rarity: "Uncommon", price: 70, image: "assets/items/obsidian_blade_dagger.png", color: "lightblue"},
+            { name: "Hare Hunt Rifle", rarity: "Uncommon", price: 90, image: "assets/items/hare_hunt_rifle.png", color: "lightblue"},
+            { name: "Staff of Wind and Sand", rarity: "Uncommon", price: 75, image: "assets/items/staff_of_wind_and_sand.png", color: "lightblue"},
+            { name: "Darktrench Stalker", rarity: "Mythical", price: 450, image: "assets/items/darktrench_stalker.webp", color: "purple"},
+            { name: "Rites of Vile Convocation", rarity: "Mythical", price: 500, image: "assets/items/rites_of_vile_convocation.png", color: "purple"}
+        ]
+    },
     "Rare Case": {
-        price: 200,
+        price: 450,
         image: "assets/cases/Rare_case.webp",
         items: [
-            { name: "Fractal Horns of Inner Abysm", rarity: "Rare", price: 150, image: "assets/items/terrorblade_horns.png", color: "blue" },
+            { name: "Ocean Conqueror", rarity: "Rare", price: 150, image: "assets/items/Ocean_Conqueror.webp", color: "blue" },
             { name: "Featherfall Cloak", rarity: "Rare", price: 140, image: "assets/items/windranger_featherfall.png", color: "blue" },
-            { name: "Pale Augur", rarity: "Rare", price: 135, image: "assets/items/death_prophet_pale_augur.png", color: "blue" },
-            { name: "Bracers of the Cavern Luminar", rarity: "Rare", price: 130, image: "assets/items/undying_bracers.png", color: "blue" },
-            { name: "Peregrine Flight", rarity: "Rare", price: 125, image: "assets/items/huskar_peregrine_flight.png", color: "blue" },
+            { name: "Battleaxe of the Basilisk", rarity: "Rare", price: 135, image: "assets/items/Battleaxe_of_the_Basilisk.png", color: "blue" },
+            { name: "Vespoid Stalker Arms", rarity: "Rare", price: 130, image: "assets/items/Vespoid_Stalker_Arms.png", color: "blue" },
+            { name: "Battle Banner of the Masked", rarity: "Rare", price: 350, image: "assets/items/Battle_Banner_of_the_Masked.webp", color: "blue" },
             { name: "Flight of the Undying Light", rarity: "Mythical", price: 500, image: "assets/items/dawnbreaker_flight.png", color: "purple" },
             { name: "Bindings of Deep Magma", rarity: "Mythical", price: 450, image: "assets/items/earthshaker_magma.png", color: "purple" }
         ]
@@ -79,7 +103,9 @@ function getRandomItem(caseItems) {
         "Immortal": 5, // 5%
         "Legendary": 10, // 10%
         "Mythical": 25, // 25%
-        "Rare": 58 // 58%
+        "Rare": 45, // 58%
+        "Uncommon": 65,
+        "Common": 80
     };
 
     let random = Math.random() * 100;
@@ -107,7 +133,7 @@ function renderCases() {
         caseElement.innerHTML = `
             <img src="${caseData.image}" alt="${Object.keys(cases)[index]}">
             <p>${Object.keys(cases)[index]}</p>
-            <p class="case-price">Стоимость открытия: ${caseData.price} монет</p>
+            <p class="case-price">${caseData.price} монет</p>
         `;
         caseElement.addEventListener("click", () => selectCase(index));
         casesContainer.appendChild(caseElement);
@@ -127,7 +153,7 @@ function selectCase(index) {
 
     if (caseItemsContainer) {
         caseItemsContainer.innerHTML = selectedCase.items
-            .filter(item => ["Arcana", "Immortal", "Legendary"].includes(item.rarity))
+            .filter(item => ["Arcana", "Immortal", "Legendary", "Mythical"].includes(item.rarity))
             .map(item => `
                 <div class="case-item" style="border-left: 5px solid ${item.color}; padding-left: 10px;">
                     <img src="${item.image}" alt="${item.name}" width="50">
