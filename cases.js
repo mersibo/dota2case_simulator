@@ -1,3 +1,9 @@
+import { 
+    collection, doc, setDoc, getDoc, 
+    query, orderBy, limit, getDocs 
+  } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
+  import { db } from "./firebase-init.js";
+  
 const cases = {
     "Common Case": {
         price: 100,
@@ -86,6 +92,7 @@ const cases = {
 };
 
 
+
 const balanceElement = document.getElementById("balanceAmount");
 const casesContainer = document.getElementById("casesContainer");
 const openCaseButton = document.getElementById("openCaseButton");
@@ -94,16 +101,61 @@ const caseItemsContainer = document.getElementById("caseItems");
 let balance = localStorage.getItem("balance") ? parseInt(localStorage.getItem("balance")) : 3000;
 let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
 let selectedCase = null;
+let playerName = localStorage.getItem("playerName") || "Player" + Math.floor(Math.random() * 1000);
+let isLeaderboardVisible = false;
 
 updateBalance();
 
+export async function logout() {
+    try {
+      localStorage.removeItem('currentUser');
+      window.location.href = 'index.html'; 
+    } catch (error) {
+      console.error('Ошибка выхода:', error);
+      alert('Не удалось выйти. Попробуйте ещё раз.');
+    }
+  }
+
+  async function checkPromoCode(code) {
+    try {
+      const promoRef = doc(db, "promocodes", code);
+      const promoSnap = await getDoc(promoRef);
+      
+      if (!promoSnap.exists() || promoSnap.data().used) {
+        return { valid: false, message: "Промокод недействителен или уже использован" };
+      }
+      
+      // Если промокод действителен
+      const promoData = promoSnap.data();
+      await updateDoc(promoRef, { used: true });
+      
+      // Обновляем баланс
+      balance += promoData.value;
+      updateBalance();
+      
+      return { valid: true, message: `+${promoData.value} монет! Новый баланс: ${balance}` };
+    } catch (err) {
+      console.error("Ошибка промокода:", err);
+      return { valid: false, message: "Ошибка сервера" };
+    }
+  }
+  
+  // Обработчик промокодов
+  document.getElementById("promoBtn")?.addEventListener("click", async () => {
+    const promoCode = document.getElementById("promoInput").value.trim();
+    if (!promoCode) return;
+    
+    const result = await checkPromoCode(promoCode);
+    alert(result.message);
+  });
+
 function getRandomItem(caseItems) {
     let chances = {
-        "Arcana": 2,  // 2%
-        "Immortal": 5, // 5%
-        "Legendary": 10, // 10%
-        "Mythical": 25, // 25%
-        "Rare": 45, // 58%
+        "Arcana": 2,  
+        "Immortal": 5, 
+        "Legendary": 10, 
+        "Mythical": 25, 
+        "Rare": 45, 
         "Uncommon": 65,
         "Common": 80
     };
@@ -186,54 +238,74 @@ function populateRoulette() {
     }
 }
 
-function startSpin() {
-    if (!selectedCase) return;
-    if (balance < selectedCase.price) {
-        alert("Недостаточно монет!");
+async function startSpin() {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) {
+        alert('Сначала войдите в аккаунт!');
         return;
     }
+    const btn = document.getElementById('openCaseBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"><i class="fas fa-spinner"></i></span> Открываем...';
+    btn.disabled = true;
 
-    balance -= selectedCase.price;
-    updateBalance();
+    try {
+        if (!selectedCase) return;
+        if (balance < selectedCase.price) {
+            alert("Недостаточно монет!");
+            return;
+        }
 
-    let finalItem = getRandomItem(selectedCase.items);
-    inventory.push(finalItem);
-    updateInventory();
+        balance -= selectedCase.price;
+        updateBalance();
 
-    let roulette = document.getElementById("roulette");
-    roulette.innerHTML = ""; 
+        let finalItem = getRandomItem(selectedCase.items);
+        inventory.push(finalItem);
+        updateInventory();
 
-    let itemsOnScreen = 7; 
-    let itemWidth = 120; 
-    let totalItems = 40; 
 
-    for (let i = 0; i < totalItems; i++) {
-        let item = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
-        let img = document.createElement("img");
-        img.src = item.image;
-        img.classList.add("roulette-item");
-        roulette.appendChild(img);
-    }
+        let roulette = document.getElementById("roulette");
+        roulette.innerHTML = ""; 
 
-    let finalIndex = Math.floor(totalItems / 2);
-    roulette.children[finalIndex].src = finalItem.image;
+        // Создаем элементы рулетки
+        let itemsOnScreen = 7;
+        let itemWidth = 120;
+        let totalItems = 40;
 
-    let finalPosition = finalIndex * itemWidth - (itemsOnScreen * itemWidth) / 2;
+        for (let i = 0; i < totalItems; i++) {
+            let item = selectedCase.items[Math.floor(Math.random() * selectedCase.items.length)];
+            let img = document.createElement("img");
+            img.src = item.image;
+            img.classList.add("roulette-item");
+            roulette.appendChild(img);
+        }
 
-    roulette.style.transition = "none";
-    roulette.style.left = "0px";
+        // Устанавливаем выигрышный предмет в центр
+        let finalIndex = Math.floor(totalItems / 2);
+        roulette.children[finalIndex].src = finalItem.image;
 
-    setTimeout(() => {
-        roulette.style.transition = "left 3s ease-out";
-        roulette.style.left = `-${finalPosition + 1800}px`;
-    }, 50);
+        // Первая часть анимации (разгон)
+        roulette.style.transition = "none";
+        roulette.style.left = "0px";
 
-    setTimeout(() => {
-        roulette.style.transition = "left 3s cubic-bezier(0.2, 1, 0.3, 1)";
-        roulette.style.left = `-${finalPosition}px`;
-    }, 3000);
+        await new Promise(resolve => {
+            setTimeout(() => {
+                roulette.style.transition = "left 3s ease-out";
+                roulette.style.left = `-${finalIndex * itemWidth - (itemsOnScreen * itemWidth) / 2 + 1800}px`;
+                resolve();
+            }, 50);
+        });
 
-    setTimeout(() => {
+        // Вторая часть анимации (торможение)
+        await new Promise(resolve => {
+            setTimeout(() => {
+                roulette.style.transition = "left 3s cubic-bezier(0.2, 1, 0.3, 1)";
+                roulette.style.left = `-${finalIndex * itemWidth - (itemsOnScreen * itemWidth) / 2}px`;
+                setTimeout(resolve, 3000);
+            }, 3050);
+        });
+
+        // Показываем результат
         let resultBox = document.getElementById("itemResult");
         let itemImage = document.getElementById("itemImage");
         let itemName = document.getElementById("itemName");
@@ -246,19 +318,31 @@ function startSpin() {
         resultBox.style.opacity = "0";
         resultBox.style.transform = "translate(-50%, -50%) scale(0.5)";
 
-        setTimeout(() => {
-            resultBox.style.opacity = "1";
-            resultBox.style.transform = "translate(-50%, -50%) scale(1)";
-        }, 100);
-
-        setTimeout(() => {
-            resultBox.style.opacity = "0";
-            resultBox.style.transform = "translate(-50%, -50%) scale(0.5)";
+        // Анимация появления
+        await new Promise(resolve => {
             setTimeout(() => {
-                resultBox.style.display = "none";
-            }, 800);
-        }, 3500);
-    }, 6200);
+                resultBox.style.opacity = "1";
+                resultBox.style.transform = "translate(-50%, -50%) scale(1)";
+                resolve();
+            }, 100);
+        });
+
+        // Анимация исчезновения
+        await new Promise(resolve => {
+            setTimeout(() => {
+                resultBox.style.opacity = "0";
+                resultBox.style.transform = "translate(-50%, -50%) scale(0.5)";
+                setTimeout(() => {
+                    resultBox.style.display = "none";
+                    resolve();
+                }, 800);
+            }, 3500);
+        });
+
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
 }
 
 
@@ -273,3 +357,73 @@ function updateInventory() {
 }
 
 renderCases();
+
+
+
+document.getElementById('openCaseBtn').addEventListener('click', async () => {
+    await startSpin(); 
+});
+
+document.getElementById('promoBtn').addEventListener('click', async function() {
+    const promoCode = document.getElementById('promoInput').value.trim().toUpperCase();
+    
+    if (!promoCode) {
+      alert('Введите промокод!');
+      return;
+    }
+  
+    try {
+      console.log('Проверяем промокод:', promoCode);
+
+      const promoRef = doc(db, "promocodes", promoCode);
+      const promoSnap = await getDoc(promoRef);
+  
+      if (!promoSnap.exists()) {
+        console.error('Документ не найден. Проверьте:');
+        console.log('- Существует ли коллекция "promocodes"');
+        console.log(`- Есть ли документ с ID "${promoCode}"`);
+        alert(`Промокод "${promoCode}" не найден!`);
+        return;
+      }
+  
+      // 3. Проверяем структуру данных
+      const promoData = promoSnap.data();
+      if (!promoData || typeof promoData.used !== 'boolean' || typeof promoData.value !== 'number') {
+        console.error('Неверная структура документа:', promoData);
+        alert('Ошибка сервера: неверный формат промокода');
+        return;
+      }
+      if (promoData.used) {
+        alert('Этот промокод уже использован!');
+        return;
+      }
+  
+      // 5. Активируем промокод
+      await updateDoc(promoRef, { used: true });
+      
+      // 6. Начисляем бонус
+      const bonus = promoData.value;
+      let balance = parseInt(localStorage.getItem("balance")) || 3000;
+      balance += bonus;
+      localStorage.setItem("balance", balance);
+      document.getElementById('balanceAmount').textContent = balance;
+  
+      alert(`✅ Промокод активирован! +${bonus} монет`);
+      document.getElementById('promoInput').value = '';
+  
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка сервера. Попробуйте позже.');
+    }
+
+    if (!localStorage.getItem('playerName')) {
+        const name = prompt("Введите ваш игровой ник (макс. 15 символов):", 
+                            "Player" + Math.floor(Math.random() * 1000));
+        if (name) {
+            localStorage.setItem('playerName', name.slice(0, 15));
+        }
+    }
+    
+  });
+
+  document.getElementById('logoutBtn')?.addEventListener('click', logout);

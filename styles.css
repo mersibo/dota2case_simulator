@@ -184,21 +184,22 @@ h2 {
     justify-content: center;
     gap: 10px;
     
-    max-height: 400px; /* Ограничение по высоте */
-    overflow-y: auto; /* Вертикальная прокрутка */
+    max-height: 400px; 
+    overflow-y: auto;
     padding: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Легкая рамка */
-    background: rgba(0, 0, 0, 0.6); /* Темный фон */
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    background: rgba(0, 0, 0, 0.6); 
 }
 
 #balance {
     font-size: 24px;
     font-weight: bold;
-    color: #FFD700; /* Золотой цвет */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Тень */
+    color: #FFD700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     padding: 10px;
     border-radius: 8px;
     display: inline-block;
     background: linear-gradient(135deg, #222, #444);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
+

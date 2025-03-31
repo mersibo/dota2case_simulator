@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Авторизация</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Yandex Games SDK -->
+    <script src="https://sdk.games.s3.yandex.net/sdk.js"></script>
 </head>
 <body>
     <div class="auth-container">
@@ -44,6 +46,8 @@
             <p class="switch-form">Уже есть аккаунт? <a href="#" id="switchToLogin">Войти</a></p>
         </form>
     </div>
-    <script src="auth.js"></script>
+    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="cases.js"></script>
 </body>
 </html>

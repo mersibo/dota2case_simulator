@@ -4,17 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dota 2 Case Simulator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.55.2/phaser.min.js"></script>
     <link rel="stylesheet" href="cases.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>        
+        .promo-section {
+            position: fixed;
+            bottom: 50px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            gap: 10px;
+            width: 180px; 
+        }
+
+        #promoInput {
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            box-sizing: border-box; 
+        }
+
+        #promoBtn {
+            padding: 8px 20px; 
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: auto; 
+            margin: 0 auto;
+        }
+
+        .promo-section h3 {
+            color: white;
+            text-align: center;
+            width: 100%;
+            margin: 0 0 10px 0;
+        }
+    </style>
 </head>
 <body>
     <div class="menu">
         <div class="profile">
             <img src="assets/logo.png" alt="Avatar" id="avatarImage">
-            <p>Баланс: <span id="balanceAmount">3000</span> монет</p>
+            <p>Баланс: <span id="balanceAmount"></span> монет</p>
         </div>
         <button onclick="location.href='inventory.html'">Инвентарь</button>
-        <button onclick="logout()">Выход</button>
+        <button id="logoutBtn">Выйти</button>
+    </div>
+
+    <div class="promo-section">
+        <h3><i class="fas fa-gift"></i> Промокод</h3>
+        <input type="text" id="promoInput" placeholder="Введите код">
+        <button id="promoBtn">Активировать</button>
     </div>
 
     <div class="cases-container" id="casesContainer"></div> 
@@ -24,7 +71,7 @@
             <p id="casePrice">Стоимость открытия: <span id="priceAmount"></span> монет</p>
             <button id="backToCasesBtn" class="back-btn">Назад к кейсам</button> 
             <h2 id="selectedCaseName"></h2>
-            <button class="open-case-btn" id="openCaseBtn" onclick="startSpin()" disabled>Открыть кейс</button>
+            <button class="open-case-btn" id="openCaseBtn">Открыть кейс</button>
         </div>
         <div class="case-items" id="caseItems"></div> 
 
@@ -38,13 +85,8 @@
         </div>
     </div>
 
-    <script src="cases.js"></script>
-    <script src="auth.js"></script>
-    <script>
-        function logout() {
-            alert("Вы вышли из аккаунта");
-            location.href = "index.html"; 
-        }
-    </script>
+    <script type="module" src="firebase-init.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="cases.js"></script>
 </body>
 </html>
