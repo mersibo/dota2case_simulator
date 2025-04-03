@@ -105,16 +105,6 @@ let playerName = localStorage.getItem("playerName") || "Player" + Math.floor(Mat
 
 updateBalance();
 
-export async function logout() {
-    try {
-      localStorage.removeItem('currentUser');
-      window.location.href = 'index.html'; 
-    } catch (error) {
-      console.error('Ошибка выхода:', error);
-      alert('Не удалось выйти. Попробуйте ещё раз.');
-    }
-}
-
 async function checkPromoCode(code) {
     try {
       const promoRef = doc(db, "promocodes", code);
@@ -234,10 +224,6 @@ function populateRoulette() {
 
 async function startSpin() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) {
-        alert('Сначала войдите в аккаунт!');
-        return;
-    }
     const btn = document.getElementById('openCaseBtn');
     const originalText = btn.innerHTML;
     btn.innerHTML = '<span class="spinner"><i class="fas fa-spinner"></i></span> Открываем...';
@@ -386,20 +372,12 @@ document.getElementById('promoBtn').addEventListener('click', async function() {
       localStorage.setItem("balance", balance);
       document.getElementById('balanceAmount').textContent = balance;
   
-      alert(`✅ Промокод активирован! +${bonus} монет`);
+      alert(`Промокод активирован! +${bonus} монет`);
       document.getElementById('promoInput').value = '';
   
     } catch (error) {
       console.error('Ошибка:', error);
       alert('Ошибка сервера. Попробуйте позже.');
-    }
-
-    if (!localStorage.getItem('playerName')) {
-        const name = prompt("Введите ваш игровой ник (макс. 15 символов):", 
-                            "Player" + Math.floor(Math.random() * 1000));
-        if (name) {
-            localStorage.setItem('playerName', name.slice(0, 15));
-        }
     }
 });
 
