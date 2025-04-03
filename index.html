@@ -3,51 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Авторизация</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Yandex Games SDK -->
+    <title>Dota 2 Case Simulator</title>
+    <link rel="stylesheet" href="cases.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://sdk.games.s3.yandex.net/sdk.js"></script>
+    <style>        
+        .promo-section {
+            position: fixed;
+            bottom: 50px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            gap: 10px;
+            width: 180px; 
+        }
+
+        #promoInput {
+            padding: 8px;
+            border-radius: 5px;
+            border: none;
+            width: 100%;
+            box-sizing: border-box; 
+        }
+
+        #promoBtn {
+            padding: 8px 20px; 
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: auto; 
+            margin: 0 auto;
+        }
+
+        .promo-section h3 {
+            color: white;
+            text-align: center;
+            width: 100%;
+            margin: 0 0 10px 0;
+        }
+        #rewardAdBtn {
+            background: #FFDB4D;
+            color: #000;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            width: 80%;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        #banner-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: transparent;
+            z-index: 100;
+        }   
+    </style>
 </head>
 <body>
-    <div class="auth-container">
-        <h2 id="authTitle">Вход</h2>
-        
-        <form id="loginForm">
-            <div class="input-group">
-                <label for="loginEmail">E-mail</label>
-                <input type="email" id="loginEmail" required>
-            </div>
-            <div class="input-group">
-                <label for="loginPassword">Пароль</label>
-                <input type="password" id="loginPassword" required>
-            </div>
-            <button type="submit" class="auth-btn">Войти</button>
-            <p class="switch-form">Нет аккаунта? <a href="#" id="switchToRegister">Создать</a></p>
-        </form>
+    <div class="menu">
+        <div class="profile">
+            <img src="assets/logo.png" alt="Avatar" id="avatarImage">
+            <p>Баланс: <span id="balanceAmount"></span> монет</p>
+        </div>
+        <button onclick="location.href='inventory.html'">Инвентарь</button>
+        <button id="rewardAdBtn">
+            <i class="fas fa-coins"></i> Получить +500 монет
+        </button>
 
-        <form id="registerForm" class="hidden">
-            <div class="input-group">
-                <label for="username">Никнейм</label>
-                <input type="text" id="username" required>
-            </div>
-            <div class="input-group">
-                <label for="registerEmail">E-mail</label>
-                <input type="email" id="registerEmail" required>
-            </div>
-            <div class="input-group">
-                <label for="registerPassword">Пароль</label>
-                <input type="password" id="registerPassword" required>
-            </div>
-            <div class="input-group">
-                <label for="confirmPassword">Повторите пароль</label>
-                <input type="password" id="confirmPassword" required>
-            </div>
-            <button type="submit" class="auth-btn">Зарегистрироваться</button>
-            <p class="switch-form">Уже есть аккаунт? <a href="#" id="switchToLogin">Войти</a></p>
-        </form>
+        <div id="banner-container"></div>
     </div>
+
+    <div class="promo-section">
+        <h3><i class="fas fa-gift"></i> Промокод</h3>
+        <input type="text" id="promoInput" placeholder="Введите код">
+        <button id="promoBtn">Активировать</button>
+    </div>
+
+    <div class="cases-container" id="casesContainer"></div> 
+
+    <div class="container" id="caseDetailsContainer" style="display: none;">
+        <div class="case-info">
+            <p id="casePrice">Стоимость открытия: <span id="priceAmount"></span> монет</p>
+            <button id="backToCasesBtn" class="back-btn">Назад к кейсам</button> 
+            <h2 id="selectedCaseName"></h2>
+            <button class="open-case-btn" id="openCaseBtn">Открыть кейс</button>
+        </div>
+        <div class="case-items" id="caseItems"></div> 
+
+        <div class="roulette-container">
+            <div class="roulette" id="roulette"></div>
+        </div>
+
+        <div class="item-result" id="itemResult" style="display: none;">
+            <img id="itemImage" src="" alt="Item">
+            <p id="itemName"></p>
+        </div>
+    </div>
+
     <script type="module" src="firebase-init.js"></script>
-    <script type="module" src="auth.js"></script>
     <script type="module" src="cases.js"></script>
+    <script>
+        YaGames.init().then(ysdk => {
+            window.ysdk = ysdk;
+            console.log('Yandex SDK loaded');
+            
+            window.rewardedAd = ysdk.adv.createRewardedAd({
+                callbacks: {
+                    onOpen: () => console.log('Реклама началась'),
+                    onClose: (wasShown) => {
+                        if (wasShown) {
+                            giveReward(); 
+                        }
+                    }
+                }
+            });
+            
+            showBannerAd();
+        });
+        
+        function showBannerAd() {
+            if (window.ysdk?.adv) {
+                ysdk.adv.showBannerAdv({
+                    container: 'banner-container',
+                    onClose: () => console.log('Баннер закрыт'),
+                    onError: (err) => console.error('Ошибка баннера:', err)
+                });
+            }
+        }
+        
+        function showRewardedAd() {
+            if (window.rewardedAd) {
+                rewardedAd.show()
+                    .then(() => console.log('Реклама запущена'))
+                    .catch(err => console.error('Ошибка:', err));
+            }
+        }
+        
+        function giveReward() {
+            let balance = parseInt(localStorage.getItem("balance")) || 3000;
+            balance += 500;
+            localStorage.setItem("balance", balance);
+            document.getElementById('balanceAmount').textContent = balance;
+            alert('Вы получили 500 монет!');
+        }
+    </script>
 </body>
 </html>

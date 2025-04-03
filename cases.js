@@ -1,6 +1,6 @@
 import { 
     collection, doc, setDoc, getDoc, 
-    query, orderBy, limit, getDocs 
+    query, orderBy, limit, getDocs, updateDoc 
   } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
   import { db } from "./firebase-init.js";
   
@@ -102,7 +102,6 @@ let balance = localStorage.getItem("balance") ? parseInt(localStorage.getItem("b
 let inventory = JSON.parse(localStorage.getItem("inventory")) || [];
 let selectedCase = null;
 let playerName = localStorage.getItem("playerName") || "Player" + Math.floor(Math.random() * 1000);
-let isLeaderboardVisible = false;
 
 updateBalance();
 
@@ -114,9 +113,9 @@ export async function logout() {
       console.error('Ошибка выхода:', error);
       alert('Не удалось выйти. Попробуйте ещё раз.');
     }
-  }
+}
 
-  async function checkPromoCode(code) {
+async function checkPromoCode(code) {
     try {
       const promoRef = doc(db, "promocodes", code);
       const promoSnap = await getDoc(promoRef);
@@ -125,11 +124,9 @@ export async function logout() {
         return { valid: false, message: "Промокод недействителен или уже использован" };
       }
       
-      // Если промокод действителен
       const promoData = promoSnap.data();
       await updateDoc(promoRef, { used: true });
       
-      // Обновляем баланс
       balance += promoData.value;
       updateBalance();
       
@@ -138,16 +135,15 @@ export async function logout() {
       console.error("Ошибка промокода:", err);
       return { valid: false, message: "Ошибка сервера" };
     }
-  }
-  
-  // Обработчик промокодов
-  document.getElementById("promoBtn")?.addEventListener("click", async () => {
+}
+
+document.getElementById("promoBtn")?.addEventListener("click", async () => {
     const promoCode = document.getElementById("promoInput").value.trim();
     if (!promoCode) return;
     
     const result = await checkPromoCode(promoCode);
     alert(result.message);
-  });
+});
 
 function getRandomItem(caseItems) {
     let chances = {
@@ -197,7 +193,6 @@ function selectCase(index) {
 
     selectedCase = Object.values(cases)[index];
     document.getElementById("selectedCaseName").textContent = selectedCase.name;
-
     document.getElementById("priceAmount").textContent = selectedCase.price;
 
     const caseDetailsContainer = document.getElementById("caseDetailsContainer");
@@ -219,7 +214,6 @@ function selectCase(index) {
 
 document.getElementById("backToCasesBtn").addEventListener("click", () => {
     document.querySelectorAll('.case').forEach(caseElem => caseElem.style.display = 'block');
-
     document.getElementById("caseDetailsContainer").style.display = "none";
 });
 
@@ -263,11 +257,9 @@ async function startSpin() {
         inventory.push(finalItem);
         updateInventory();
 
-
         let roulette = document.getElementById("roulette");
         roulette.innerHTML = ""; 
 
-        // Создаем элементы рулетки
         let itemsOnScreen = 7;
         let itemWidth = 120;
         let totalItems = 40;
@@ -280,11 +272,9 @@ async function startSpin() {
             roulette.appendChild(img);
         }
 
-        // Устанавливаем выигрышный предмет в центр
         let finalIndex = Math.floor(totalItems / 2);
         roulette.children[finalIndex].src = finalItem.image;
 
-        // Первая часть анимации (разгон)
         roulette.style.transition = "none";
         roulette.style.left = "0px";
 
@@ -296,7 +286,6 @@ async function startSpin() {
             }, 50);
         });
 
-        // Вторая часть анимации (торможение)
         await new Promise(resolve => {
             setTimeout(() => {
                 roulette.style.transition = "left 3s cubic-bezier(0.2, 1, 0.3, 1)";
@@ -305,7 +294,6 @@ async function startSpin() {
             }, 3050);
         });
 
-        // Показываем результат
         let resultBox = document.getElementById("itemResult");
         let itemImage = document.getElementById("itemImage");
         let itemName = document.getElementById("itemName");
@@ -318,7 +306,6 @@ async function startSpin() {
         resultBox.style.opacity = "0";
         resultBox.style.transform = "translate(-50%, -50%) scale(0.5)";
 
-        // Анимация появления
         await new Promise(resolve => {
             setTimeout(() => {
                 resultBox.style.opacity = "1";
@@ -327,7 +314,6 @@ async function startSpin() {
             }, 100);
         });
 
-        // Анимация исчезновения
         await new Promise(resolve => {
             setTimeout(() => {
                 resultBox.style.opacity = "0";
@@ -343,9 +329,12 @@ async function startSpin() {
         btn.innerHTML = originalText;
         btn.disabled = false;
     }
+    const openCount = localStorage.getItem('caseOpenCount') || 0;
+    if (openCount % 3 === 0) {
+        showInterstitialAd();
+    }
+    localStorage.setItem('caseOpenCount', openCount + 1);
 }
-
-
 
 function updateBalance() {
     balanceElement.innerText = balance;
@@ -357,8 +346,6 @@ function updateInventory() {
 }
 
 renderCases();
-
-
 
 document.getElementById('openCaseBtn').addEventListener('click', async () => {
     await startSpin(); 
@@ -373,23 +360,16 @@ document.getElementById('promoBtn').addEventListener('click', async function() {
     }
   
     try {
-      console.log('Проверяем промокод:', promoCode);
-
       const promoRef = doc(db, "promocodes", promoCode);
       const promoSnap = await getDoc(promoRef);
   
       if (!promoSnap.exists()) {
-        console.error('Документ не найден. Проверьте:');
-        console.log('- Существует ли коллекция "promocodes"');
-        console.log(`- Есть ли документ с ID "${promoCode}"`);
         alert(`Промокод "${promoCode}" не найден!`);
         return;
       }
   
-      // 3. Проверяем структуру данных
       const promoData = promoSnap.data();
       if (!promoData || typeof promoData.used !== 'boolean' || typeof promoData.value !== 'number') {
-        console.error('Неверная структура документа:', promoData);
         alert('Ошибка сервера: неверный формат промокода');
         return;
       }
@@ -398,10 +378,8 @@ document.getElementById('promoBtn').addEventListener('click', async function() {
         return;
       }
   
-      // 5. Активируем промокод
       await updateDoc(promoRef, { used: true });
       
-      // 6. Начисляем бонус
       const bonus = promoData.value;
       let balance = parseInt(localStorage.getItem("balance")) || 3000;
       balance += bonus;
@@ -423,7 +401,19 @@ document.getElementById('promoBtn').addEventListener('click', async function() {
             localStorage.setItem('playerName', name.slice(0, 15));
         }
     }
-    
-  });
+});
 
-  document.getElementById('logoutBtn')?.addEventListener('click', logout);
+export function showInterstitialAd() {
+    if (window.ysdk?.adv) {
+        ysdk.adv.showFullscreenAdv({
+            callbacks: {
+                onClose: (wasShown) => {
+                    console.log('Реклама закрыта', wasShown);
+                },
+                onError: (err) => {
+                    console.error('Ошибка рекламы:', err);
+                }
+            }
+        });
+    }
+}
